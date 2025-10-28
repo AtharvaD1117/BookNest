@@ -1,13 +1,13 @@
 {
   "name": "book-nest.ui",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4200",
     "build": "ng build --configuration production --no-prerender",
-    "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:BookNest.UI": "node dist/BookNest.UI/server/server.mjs"
+    "e2e": "npx playwright test",
+    "ci:test": "npm run build && (npm run start &) && npx wait-on http://localhost:4200 && npx playwright test"
   },
   "prettier": {
     "printWidth": 100,
@@ -21,7 +21,6 @@
       }
     ]
   },
-  "private": true,
   "dependencies": {
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
