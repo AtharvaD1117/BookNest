@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production --no-prerender",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:BookNest.UI": "node dist/BookNest.UI/server/server.mjs"
@@ -31,7 +31,10 @@
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@angular/ssr": "^20.3.7",
+    "axios": "^1.12.2",
+    "bootstrap": "^5.3.8",
     "express": "^5.1.0",
+    "powerbi-client": "^2.23.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -40,9 +43,10 @@
     "@angular/build": "^20.3.7",
     "@angular/cli": "^20.3.7",
     "@angular/compiler-cli": "^20.3.0",
+    "@playwright/test": "^1.56.1",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^20.17.19",
+    "@types/node": "^20.19.23",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
