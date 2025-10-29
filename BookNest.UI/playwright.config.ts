@@ -2,18 +2,22 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 30 * 1000,            // each test timeout
-  expect: { timeout: 5000 },     // default expect timeout
-  fullyParallel: true,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'], // shows results in console
+    ['html', { outputFolder: 'playwright-report', open: 'never' }], // generates HTML report
+  ],
   use: {
-    headless: true,
-    baseURL: 'http://localhost:4200',
-    actionTimeout: 10 * 1000,
-    trace: 'on-first-retry'
+    baseURL: process.env.API_URL || 'http://localhost:5000',
+    trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } }
-  ]
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+  ],
 });
