@@ -9,14 +9,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -45,7 +45,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # 6️⃣ Build and run backend API
+      # 6️⃣ Build & run backend API
       - name: Build & Run API
         working-directory: ./BookNest.API
         run: |
@@ -53,7 +53,19 @@ jobs:
           dotnet build --no-restore --configuration Release
           nohup dotnet run --urls=http://localhost:5000 &
 
-      # 7️⃣ Wait for backend API
+      # 7️⃣ Start frontend (React)
+      - name: Start Frontend (React)
+        working-directory: ./BookNest.UI
+        run: |
+          nohup npm start -- --port 3000 &
+          echo "Waiting for frontend to start..."
+          until curl -s http://localhost:3000 > /dev/null; do
+            echo "Still waiting..."
+            sleep 5
+          done
+          echo "Frontend is up!"
+
+      # 8️⃣ Wait for backend to be ready
       - name: Wait for API to start
         run: |
           echo "Waiting for API to start..."
@@ -63,14 +75,15 @@ jobs:
           done
           echo "API is up!"
 
-      # 8️⃣ Run Playwright tests
+      # 9️⃣ Run Playwright tests
       - name: Run Playwright tests
         working-directory: ./BookNest.UI
         env:
           API_URL: http://localhost:5000
+          FRONTEND_URL: http://localhost:3000
         run: npx playwright test --reporter=html
 
-      # 9️⃣ Upload HTML report
+      # 🔟 Upload Playwright HTML report
       - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
