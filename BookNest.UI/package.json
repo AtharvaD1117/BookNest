@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "ng serve --host 0.0.0.0 --port 4200",
+    "start": "ng serve --port 4200",
     "build": "ng build --configuration production --no-prerender",
-    "e2e": "npx playwright test"
+    "test": "ng test",
+    "e2e": "npx playwright test",
+    "ci:test": "npm run build && (npm run start &) && npx wait-on http://localhost:4200 && npx playwright test"
   },
   "prettier": {
     "printWidth": 100,

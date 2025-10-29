@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('BookNest UI Tests', () => {
+
   test('should load the homepage successfully', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/BookNest/i);
@@ -8,6 +9,7 @@ test.describe('BookNest UI Tests', () => {
 
     const navItems = page.locator('nav a');
     const count = await navItems.count();
-    expect(count).toBeGreaterThan(0);  // correct assertion
+    expect(count).toBeGreaterThan(0);  // ✅ Correct Playwright + Jest syntax
   });
+
 });

@@ -19,8 +19,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Start backend (API)
-        run: |
-          cd ../BookNest.API
+        run: cd BookNest.API
           dotnet run &
           sleep 10
       - name: Run Playwright tests
