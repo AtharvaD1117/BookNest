@@ -1,20 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment'; // adjust path
-
-export interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-}
+import { Book } from '../models/book.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BookService {
-  private apiUrl = `${environment.apiUrl}/books`;
+  private apiUrl = 'http://localhost:5132/api/books';
 
   constructor(private http: HttpClient) {}
 

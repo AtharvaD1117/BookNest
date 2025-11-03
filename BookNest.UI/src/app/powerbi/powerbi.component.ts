@@ -1,10 +1,8 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-let pbi: any;
-if (typeof window !== 'undefined') {
-  pbi = require('powerbi-client');
-}
+// ✅ Import via ESM path (Angular-friendly)
+import * as pbi from 'powerbi-client';
 
 @Component({
   selector: 'app-powerbi',
@@ -17,10 +15,38 @@ export class PowerBIComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('✅ PowerBIComponent initialized');
+
+    const models = pbi.models;
     const container = this.el.nativeElement.querySelector('#reportContainer');
-    if (container && pbi) {
-      console.log('Power BI client ready');
-      // You can add actual Power BI embedding code here if needed
+
+    if (!container) {
+      console.error('❌ Report container not found!');
+      return;
+    }
+
+    // ✅ Dummy embed configuration (test mode)
+    const embedConfig: pbi.IEmbedConfiguration = {
+      type: 'report',
+      id: '00000000-0000-0000-0000-000000000000', // fake GUID
+      embedUrl: 'https://app.powerbi.com/reportEmbed?reportId=dummy',
+      accessToken: 'test',
+      tokenType: models.TokenType.Embed,
+      settings: {
+        background: models.BackgroundType.Transparent
+      }
+    };
+
+    const powerbi = new pbi.service.Service(
+      pbi.factories.hpmFactory,
+      pbi.factories.wpmpFactory,
+      pbi.factories.routerFactory
+    );
+
+    try {
+      powerbi.embed(container, embedConfig);
+      console.log('✅ PowerBI embed called (test mode)');
+    } catch (err) {
+      console.error('❌ Error embedding Power BI:', err);
     }
   }
 }

@@ -1,0 +1,33 @@
+.app-container {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 60px 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+app-header {
+  grid-area: header;
+  background-color: #0078d7;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+}
+
+app-sidebar {
+  grid-area: sidebar;
+  background-color: #f3f4f6;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+}
+
+app-book-list {
+  grid-area: main;
+  padding: 20px;
+  overflow-y: auto;
+}
