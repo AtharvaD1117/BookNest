@@ -1,77 +1,61 @@
-name: Build, Test, and Deploy BookNest
+name: Build and Deploy BookNest
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - master
   pull_request:
-    branches: [ main ]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # 1️⃣ Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Step 2: Setup .NET for API
+      # 2️⃣ Setup .NET 8 for backend
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      # Step 3: Setup Node for Angular UI
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # Step 4: Restore and build backend API
-      - name: Restore and build backend API
-        working-directory: BookNest.API
-        run: |
-          dotnet restore
-          dotnet build --configuration Release
-
-      # Step 5: Start backend API in background
+      # 3️⃣ Restore and run backend API
       - name: Start backend API
         working-directory: ./BookNest.API
         run: |
           dotnet restore
           nohup dotnet run --urls "http://localhost:5000" &
 
-      # Step 6: Install dependencies and build Angular UI
-      - name: Install and build frontend
-        working-directory: BookNest.UI
-        run: |
-          npm ci
-          npm run build
+      # 4️⃣ Setup Node.js for Angular frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      # Step 7: Start Angular app and wait for it to be ready
-      - name: Start frontend in background
-        working-directory: BookNest.UI
-        run: |
-          nohup npm start -- --port 4200 &
-          npx wait-on http://localhost:4200
-          echo "Frontend started at http://localhost:4200"
+      # 5️⃣ Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./BookNest.UI
+        run: npm install
 
-      # Step 8: Run Playwright tests
-      - name: Install Playwright browsers
-        working-directory: BookNest.UI
-        run: npx playwright install --with-deps
+      # 6️⃣ Build Angular project
+      - name: Build Angular app
+        working-directory: ./BookNest.UI
+        run: npm run build
 
+      # 7️⃣ Run Playwright E2E tests
       - name: Run Playwright tests
-        working-directory: BookNest.UI
-        run: npx playwright test --reporter=list
+        working-directory: ./BookNest.UI
+        run: |
+          npx playwright install
+          npm run ci:test
 
-      # Step 9: Optional - Upload Playwright HTML Report
-      - name: Upload Playwright HTML Report
-        if: failure()
+      # 8️⃣ (Optional) Upload Angular build artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: BookNest.UI/playwright-report
-
-      # Step 10: Optional - Publish Docker or Deploy
-      # (add here later)
+          name: angular-dist
+          path: ./BookNest.UI/dist
