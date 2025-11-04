@@ -2,11 +2,9 @@ name: Build and Deploy BookNest
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    branches: [master]
 
 jobs:
   build:
@@ -26,6 +24,8 @@ jobs:
         run: |
           dotnet restore
           nohup dotnet run --urls "http://localhost:5000" &
+          echo "⏳ Waiting for backend to start..."
+          sleep 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,6 +43,13 @@ jobs:
       - name: Build Angular app
         working-directory: ./BookNest.UI
         run: npm run build
+
+      - name: Start Angular app
+        working-directory: ./BookNest.UI
+        run: |
+          nohup npx http-server dist/BookNest.UI -p 4200 &
+          echo "⏳ Waiting for frontend to start..."
+          sleep 10
 
       - name: Run Playwright tests
         working-directory: ./BookNest.UI
