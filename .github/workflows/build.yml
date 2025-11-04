@@ -36,11 +36,10 @@ jobs:
 
       # Step 5: Start backend API in background
       - name: Start backend API
-        working-directory: BookNest.API
+        working-directory: ./BookNest.API
         run: |
+          dotnet restore
           nohup dotnet run --urls "http://localhost:5000" &
-          sleep 10
-          echo "Backend started at http://localhost:5000"
 
       # Step 6: Install dependencies and build Angular UI
       - name: Install and build frontend
