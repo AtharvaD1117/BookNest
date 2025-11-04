@@ -1,0 +1,116 @@
+name: Build and Test BookNest
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------
+      # 1️⃣ Checkout the repository
+      # -----------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # 2️⃣ Setup .NET 8 SDK
+      # -----------------------------
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # -----------------------------
+      # 3️⃣ Locate Backend (BookNest.API)
+      # -----------------------------
+      - name: Find backend path
+        id: find_backend
+        run: |
+          echo "Looking for BookNest.API..."
+          BACKEND_PATH=$(find . -type d -name "BookNest.API" | head -n 1)
+          if [ -z "$BACKEND_PATH" ]; then
+            echo "❌ Could not find BookNest.API"
+            exit 1
+          fi
+          echo "✅ Found backend at $BACKEND_PATH"
+          echo "BACKEND_PATH=$BACKEND_PATH" >> $GITHUB_ENV
+
+      # -----------------------------
+      # 4️⃣ Restore and Build Backend
+      # -----------------------------
+      - name: Restore & Build Backend
+        run: |
+          cd ./BookNest.API
+          dotnet restore
+          dotnet build --configuration Release
+
+      # -----------------------------
+      # 5️⃣ Run Backend in background
+      # -----------------------------
+      - name: Run Backend
+        run: |
+          cd $BACKEND_PATH
+          nohup dotnet run --urls "http://localhost:5000" &
+          sleep 10
+
+      # -----------------------------
+      # 6️⃣ Setup Node.js for Angular
+      # -----------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # -----------------------------
+      # 7️⃣ Locate Frontend (BookNest.UI)
+      # -----------------------------
+      - name: Find frontend path
+        id: find_frontend
+        run: |
+          echo "Looking for BookNest.UI..."
+          FRONTEND_PATH=$(find . -type d -name "BookNest.UI" | head -n 1)
+          if [ -z "$FRONTEND_PATH" ]; then
+            echo "❌ Could not find BookNest.UI"
+            exit 1
+          fi
+          echo "✅ Found frontend at $FRONTEND_PATH"
+          echo "FRONTEND_PATH=$FRONTEND_PATH" >> $GITHUB_ENV
+
+      # -----------------------------
+      # 8️⃣ Install & Build Angular Frontend
+      # -----------------------------
+      - name: Install Dependencies
+        run: |
+          cd $FRONTEND_PATH
+          npm ci
+
+      - name: Build Angular App
+        run: |
+          cd $FRONTEND_PATH
+          npm run build --if-present
+
+      # -----------------------------
+      # 9️⃣ Playwright Tests (Optional)
+      # -----------------------------
+      - name: Install Playwright Browsers
+        run: |
+          cd $FRONTEND_PATH
+          npx playwright install --with-deps
+
+      - name: Run Playwright Tests
+        run: |
+          cd $FRONTEND_PATH
+          npx playwright test --reporter=list
+
+      # -----------------------------
+      # ✅ 10️⃣ Build Done
+      # -----------------------------
+      - name: Done
+        run: echo "✅ Build, backend, frontend, and tests completed successfully!"
