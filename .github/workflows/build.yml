@@ -1,4 +1,4 @@
-name: Build and Deploy BookNest
+name: Build and Deploy BookNestMini
 
 on:
   push:
@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout code
+      # 1️⃣ Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2️⃣ Setup .NET 8 for backend
@@ -23,14 +23,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # 3️⃣ Restore and run backend API
-      - name: Start backend API
+      # 3️⃣ Restore and start backend API
+      - name: Restore and run backend API
         working-directory: ./BookNest/BookNest.API
         run: |
           dotnet restore
           nohup dotnet run --urls "http://localhost:5000" &
 
-      # 4️⃣ Setup Node.js for Angular frontend
+      # 4️⃣ Setup Node.js for Angular
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -45,7 +45,7 @@ jobs:
           npm install
           npm rebuild rollup
 
-      # 6️⃣ Build Angular project
+      # 6️⃣ Build Angular app
       - name: Build Angular app
         working-directory: ./BookNest/BookNest.UI
         run: npm run build
@@ -57,7 +57,7 @@ jobs:
           npx playwright install
           npm run ci:test
 
-      # 8️⃣ Upload Angular build artifacts
+      # 8️⃣ Upload build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
