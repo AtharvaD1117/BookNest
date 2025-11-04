@@ -25,7 +25,7 @@ jobs:
 
       # 3️⃣ Restore and run backend API
       - name: Start backend API
-        working-directory: ./BookNest.API
+        working-directory: ./BookNest/BookNest.API
         run: |
           dotnet restore
           nohup dotnet run --urls "http://localhost:5000" &
@@ -38,24 +38,28 @@ jobs:
 
       # 5️⃣ Install frontend dependencies
       - name: Install frontend dependencies
-        working-directory: ./BookNest.UI
-        run: npm install
+        working-directory: ./BookNest/BookNest.UI
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+          npm install
+          npm rebuild rollup
 
       # 6️⃣ Build Angular project
       - name: Build Angular app
-        working-directory: ./BookNest.UI
+        working-directory: ./BookNest/BookNest.UI
         run: npm run build
 
       # 7️⃣ Run Playwright E2E tests
       - name: Run Playwright tests
-        working-directory: ./BookNest.UI
+        working-directory: ./BookNest/BookNest.UI
         run: |
           npx playwright install
           npm run ci:test
 
-      # 8️⃣ (Optional) Upload Angular build artifacts
+      # 8️⃣ Upload Angular build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: angular-dist
-          path: ./BookNest.UI/dist
+          path: ./BookNest/BookNest.UI/dist
