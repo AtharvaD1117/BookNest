@@ -1,49 +1,78 @@
-name: Build and Test
+name: Build, Test, and Deploy BookNest
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout code
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
+      # Step 2: Setup .NET for API
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: '8.0.x'
 
-      - name: Restore & Build Backend
-        run: |
-          cd ./BookNest.API
-          dotnet restore
-          dotnet build --configuration Release
-
-      - name: Start backend API
-        run: |
-          cd ./BookNest.API
-          nohup dotnet run --urls "http://localhost:5000" &
-        shell: bash
-
+      # Step 3: Setup Node for Angular UI
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
 
-      - name: Install & Build Angular
+      # Step 4: Restore and build backend API
+      - name: Restore and build backend API
+        working-directory: BookNest.API
         run: |
-          cd ./BookNest.UI
-          npm install
+          dotnet restore
+          dotnet build --configuration Release
+
+      # Step 5: Start backend API in background
+      - name: Start backend API
+        working-directory: BookNest.API
+        run: |
+          nohup dotnet run --urls "http://localhost:5000" &
+          sleep 10
+          echo "Backend started at http://localhost:5000"
+
+      # Step 6: Install dependencies and build Angular UI
+      - name: Install and build frontend
+        working-directory: BookNest.UI
+        run: |
+          npm ci
           npm run build
 
-      - name: Run Playwright Tests
+      # Step 7: Start Angular app and wait for it to be ready
+      - name: Start frontend in background
+        working-directory: BookNest.UI
         run: |
-          cd ./BookNest.UI
-          npx playwright install --with-deps
-          npx playwright test --reporter=html
+          nohup npm start -- --port 4200 &
+          npx wait-on http://localhost:4200
+          echo "Frontend started at http://localhost:4200"
+
+      # Step 8: Run Playwright tests
+      - name: Install Playwright browsers
+        working-directory: BookNest.UI
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        working-directory: BookNest.UI
+        run: npx playwright test --reporter=list
+
+      # Step 9: Optional - Upload Playwright HTML Report
+      - name: Upload Playwright HTML Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: BookNest.UI/playwright-report
+
+      # Step 10: Optional - Publish Docker or Deploy
+      # (add here later)
